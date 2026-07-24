@@ -20,6 +20,8 @@ export const Navbar = ({ user }: { user: any }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [brandName, setBrandName] = useState('Mrudhuchithraa')
+  const [logoType, setLogoType] = useState('text')
+  const [logoImage, setLogoImage] = useState('')
   const pathname = usePathname()
 
   useEffect(() => {
@@ -28,6 +30,8 @@ export const Navbar = ({ user }: { user: any }) => {
     if (data) {
       const parsed = JSON.parse(data)
       if (parsed.brandName) setBrandName(parsed.brandName)
+      if (parsed.logoType) setLogoType(parsed.logoType)
+      if (parsed.logoImage) setLogoImage(parsed.logoImage)
     }
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
@@ -45,8 +49,12 @@ export const Navbar = ({ user }: { user: any }) => {
         )}
       >
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-          <Link href="/" className="font-heading text-2xl tracking-wide text-foreground">
-            {brandName}
+          <Link href="/" className="font-heading text-2xl tracking-wide text-foreground flex items-center">
+            {logoType === 'image' && logoImage ? (
+              <img src={logoImage} alt="Brand Logo" className="h-8 object-contain" />
+            ) : (
+              brandName
+            )}
           </Link>
           
           <nav className="hidden md:flex items-center gap-8">

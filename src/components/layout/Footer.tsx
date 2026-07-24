@@ -9,6 +9,8 @@ export const Footer = () => {
   const pathname = usePathname()
   
   const [settings, setSettings] = useState({
+    logoType: 'text',
+    logoImage: '',
     brandName: 'Mrudhuchithraa',
     instagram: '@mrudhuchithraa',
     email: 'hello@mrudhuchithraa.com',
@@ -32,7 +34,11 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="font-heading text-3xl tracking-wide mb-6 inline-block text-white">
-              {settings.brandName || 'Mrudhuchithraa'}
+              {settings.logoType === 'image' && settings.logoImage ? (
+                <img src={settings.logoImage} alt="Brand Logo" className="h-12 object-contain" />
+              ) : (
+                settings.brandName || 'Mrudhuchithraa'
+              )}
             </Link>
             <p className="font-body text-sm text-white/60 max-w-sm leading-relaxed">
               A luxury handcrafted digital gallery where every collection tells a story, every interaction feels intentional, and every piece reflects the care that goes into handmade creations.

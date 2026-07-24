@@ -7,6 +7,8 @@ import { Save, ShieldAlert } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 
 const initialSettings = {
+  logoType: 'text',
+  logoImage: '',
   brandName: 'Mrudhuchithraa',
   instagram: '@mrudhuchithraa',
   email: 'hello@mrudhuchithraa.com',
@@ -35,8 +37,19 @@ export default function SettingsManagerPage() {
     setTimeout(() => setSaved(false), 3000)
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setSettings({ ...settings, [e.target.name]: e.target.value })
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setSettings({ ...settings, logoImage: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   const handleUpdateAuth = async (e: React.FormEvent) => {
@@ -76,13 +89,42 @@ export default function SettingsManagerPage() {
         
         <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
           <div className="space-y-4">
-            <Input 
-              label="Brand / Logo Name" 
-              name="brandName" 
-              value={settings.brandName || ''} 
-              onChange={handleChange} 
-              required 
-            />
+            <div className="w-full flex flex-col relative group pt-4">
+              <label className="text-xs text-gold font-medium mb-2 block font-body">Logo Type</label>
+              <select 
+                name="logoType" 
+                value={settings.logoType || 'text'} 
+                onChange={handleChange}
+                className="w-full bg-transparent px-0 py-3 text-base text-foreground border-b border-foreground/20 focus:border-gold outline-none"
+              >
+                <option value="text">Text Logo</option>
+                <option value="image">Image Logo</option>
+              </select>
+            </div>
+
+            {settings.logoType === 'image' ? (
+              <div className="w-full flex flex-col relative group pt-4">
+                <label className="text-xs text-gold font-medium mb-2 block font-body">Upload Logo Image</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleImageUpload}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
+                />
+                {settings.logoImage && (
+                  <img src={settings.logoImage} alt="Logo Preview" className="mt-4 h-12 object-contain bg-black/5 p-2 rounded" />
+                )}
+              </div>
+            ) : (
+              <Input 
+                label="Brand / Logo Name" 
+                name="brandName" 
+                value={settings.brandName || ''} 
+                onChange={handleChange} 
+                required 
+              />
+            )}
+
             <Input 
               label="Instagram Handle" 
               name="instagram" 
