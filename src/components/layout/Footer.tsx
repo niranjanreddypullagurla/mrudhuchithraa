@@ -9,6 +9,7 @@ export const Footer = () => {
   const pathname = usePathname()
   
   const [settings, setSettings] = useState({
+    brandName: 'Mrudhuchithraa',
     instagram: '@mrudhuchithraa',
     email: 'hello@mrudhuchithraa.com',
     phone: '+91 98765 43210',
@@ -31,7 +32,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="font-heading text-3xl tracking-wide mb-6 inline-block text-white">
-              Mrudhuchithraa
+              {settings.brandName || 'Mrudhuchithraa'}
             </Link>
             <p className="font-body text-sm text-white/60 max-w-sm leading-relaxed">
               A luxury handcrafted digital gallery where every collection tells a story, every interaction feels intentional, and every piece reflects the care that goes into handmade creations.
@@ -72,7 +73,7 @@ export const Footer = () => {
         </div>
         
         <div className="mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-xs text-white/40 font-body relative z-10">
-          <p>&copy; {new Date().getFullYear()} Mrudhuchithraa. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {settings.brandName || 'Mrudhuchithraa'}. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>

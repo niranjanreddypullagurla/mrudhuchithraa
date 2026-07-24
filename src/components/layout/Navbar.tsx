@@ -19,10 +19,16 @@ const links = [
 export const Navbar = ({ user }: { user: any }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [brandName, setBrandName] = useState('Mrudhuchithraa')
   const pathname = usePathname()
 
   useEffect(() => {
     if (pathname.startsWith('/admin')) return
+    const data = localStorage.getItem('admin_settings')
+    if (data) {
+      const parsed = JSON.parse(data)
+      if (parsed.brandName) setBrandName(parsed.brandName)
+    }
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
@@ -40,7 +46,7 @@ export const Navbar = ({ user }: { user: any }) => {
       >
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
           <Link href="/" className="font-heading text-2xl tracking-wide text-foreground">
-            Mrudhuchithraa
+            {brandName}
           </Link>
           
           <nav className="hidden md:flex items-center gap-8">

@@ -7,6 +7,7 @@ import { Save, ShieldAlert } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
 
 const initialSettings = {
+  brandName: 'Mrudhuchithraa',
   instagram: '@mrudhuchithraa',
   email: 'hello@mrudhuchithraa.com',
   phone: '+91 98765 43210',
@@ -75,6 +76,13 @@ export default function SettingsManagerPage() {
         
         <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
           <div className="space-y-4">
+            <Input 
+              label="Brand / Logo Name" 
+              name="brandName" 
+              value={settings.brandName || ''} 
+              onChange={handleChange} 
+              required 
+            />
             <Input 
               label="Instagram Handle" 
               name="instagram" 
