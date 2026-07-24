@@ -5,13 +5,21 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function Home() {
   const [heroImages, setHeroImages] = useState<any[]>([])
 
   useEffect(() => {
-    const saved = localStorage.getItem('admin_hero')
-    if (saved) setHeroImages(JSON.parse(saved))
+    const fetchHero = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('hero_images').select('*').order('created_at', { ascending: true })
+      if (data) setHeroImages(data)
+    }
+    fetchHero()
   }, [])
 
   const displayImages = heroImages.length > 0 ? heroImages.map(i => i.url) : []

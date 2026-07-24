@@ -5,33 +5,39 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { motion, AnimatePresence } from 'framer-motion'
-
-// Initial mock state to demonstrate functionality immediately
-const initialData: any[] = []
+import { createBrowserClient } from '@supabase/ssr'
+import { uploadImage } from '@/utils/supabase/storage'
 
 export default function AdminCollections() {
   const [items, setItems] = useState<any[]>([])
 
   useEffect(() => {
-    const saved = localStorage.getItem('admin_collections')
-    if (saved) setItems(JSON.parse(saved))
+    const fetchCollections = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('collections').select('*').order('created_at', { ascending: false })
+      if (data) setItems(data)
+    }
+    fetchCollections()
   }, [])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   // Form State
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('')
   const [image, setImage] = useState('')
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+      setIsUploading(true)
+      const url = await uploadImage(file)
+      if (url) setImage(url)
+      setIsUploading(false)
     }
   }
 
@@ -51,24 +57,36 @@ export default function AdminCollections() {
     setIsModalOpen(true)
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this piece?")) {
-      const updated = items.filter(i => i.id !== id)
-      setItems(updated)
-      localStorage.setItem('admin_collections', JSON.stringify(updated))
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      await supabase.from('collections').delete().eq('id', id)
+      setItems(items.filter(i => i.id !== id))
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    let updated;
+    if (!image) return
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
     if (editingItem) {
-      updated = items.map(i => i.id === editingItem.id ? { ...i, title, category, image } : i)
+      const { data } = await supabase.from('collections')
+        .update({ title, category, image })
+        .eq('id', editingItem.id)
+        .select().single()
+      if (data) setItems(items.map(i => i.id === editingItem.id ? data : i))
     } else {
-      updated = [...items, { id: Date.now(), title, category, image }]
+      const { data } = await supabase.from('collections')
+        .insert([{ title, category, image }])
+        .select().single()
+      if (data) setItems([data, ...items])
     }
-    setItems(updated)
-    localStorage.setItem('admin_collections', JSON.stringify(updated))
     setIsModalOpen(false)
   }
 
@@ -145,7 +163,7 @@ export default function AdminCollections() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl overflow-hidden max-w-md w-full p-8 shadow-2xl relative"
+              className="bg-white rounded-3xl overflow-y-auto max-h-[90vh] max-w-md w-full p-8 shadow-2xl relative"
             >
               <h2 className="text-2xl font-heading text-black mb-6">
                 {editingItem ? 'Edit Artwork' : 'Post New Artwork'}
@@ -173,11 +191,13 @@ export default function AdminCollections() {
                       type="file" 
                       accept="image/*" 
                       onChange={handleImageUpload}
+                      disabled={isUploading}
                       className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
                     />
                     <div className="text-center text-xs text-gray-400">OR</div>
-                    <Input label="Paste Image URL" value={image} onChange={(e) => setImage(e.target.value)} required={!image} />
+                    <Input label="Paste Image URL" value={image} onChange={(e) => setImage(e.target.value)} required={!image} disabled={isUploading} />
                   </div>
+                  {isUploading && <p className="text-xs text-gold">Uploading image, please wait...</p>}
                   {image && <img src={image} className="mt-4 h-24 w-auto object-cover rounded-lg border border-gray-200" alt="Preview" />}
                 </div>
 

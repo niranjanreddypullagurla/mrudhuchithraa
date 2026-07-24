@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Camera, Mail, MapPin, Phone } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 
 export const Footer = () => {
   const pathname = usePathname()
@@ -19,8 +20,25 @@ export const Footer = () => {
   })
 
   useEffect(() => {
-    const data = localStorage.getItem('admin_settings')
-    if (data) setSettings(JSON.parse(data))
+    const fetchSettings = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single()
+      if (data) {
+        setSettings({
+          brandName: data.brand_name || 'Mrudhuchithraa',
+          logoType: data.logo_type || 'text',
+          logoImage: data.logo_image || '',
+          instagram: data.instagram || '@mrudhuchithraa',
+          email: data.email || 'hello@mrudhuchithraa.com',
+          phone: data.phone || '+91 98765 43210',
+          location: data.location || 'Bangalore, India'
+        })
+      }
+    }
+    fetchSettings()
   }, [])
   
   if (pathname.startsWith('/admin')) return null

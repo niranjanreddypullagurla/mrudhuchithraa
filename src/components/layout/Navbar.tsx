@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, Search, User } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { createBrowserClient } from '@supabase/ssr'
 
 const links = [
   { name: 'Home', href: '/' },
@@ -26,13 +27,19 @@ export const Navbar = ({ user }: { user: any }) => {
 
   useEffect(() => {
     if (pathname.startsWith('/admin')) return
-    const data = localStorage.getItem('admin_settings')
-    if (data) {
-      const parsed = JSON.parse(data)
-      if (parsed.brandName) setBrandName(parsed.brandName)
-      if (parsed.logoType) setLogoType(parsed.logoType)
-      if (parsed.logoImage) setLogoImage(parsed.logoImage)
+    const fetchSettings = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single()
+      if (data) {
+        if (data.brand_name) setBrandName(data.brand_name)
+        if (data.logo_type) setLogoType(data.logo_type)
+        if (data.logo_image) setLogoImage(data.logo_image)
+      }
     }
+    fetchSettings()
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)

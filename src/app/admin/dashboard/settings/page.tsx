@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Save, ShieldAlert } from 'lucide-react'
 import { createBrowserClient } from '@supabase/ssr'
+import { uploadImage } from '@/utils/supabase/storage'
 
 const initialSettings = {
   logoType: 'text',
@@ -26,13 +27,45 @@ export default function SettingsManagerPage() {
   const [authError, setAuthError] = useState(false)
 
   useEffect(() => {
-    const data = localStorage.getItem('admin_settings')
-    if (data) setSettings(JSON.parse(data))
+    const fetchSettings = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single()
+      if (data) {
+        setSettings({
+          brandName: data.brand_name || '',
+          logoType: data.logo_type || 'text',
+          logoImage: data.logo_image || '',
+          instagram: data.instagram || '',
+          email: data.email || '',
+          phone: data.phone || '',
+          location: data.location || ''
+        })
+      }
+    }
+    fetchSettings()
   }, [])
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    localStorage.setItem('admin_settings', JSON.stringify(settings))
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    
+    await supabase.from('site_settings').upsert({
+      id: 1,
+      brand_name: settings.brandName,
+      logo_type: settings.logoType,
+      logo_image: settings.logoImage,
+      instagram: settings.instagram,
+      email: settings.email,
+      phone: settings.phone,
+      location: settings.location
+    })
+
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }
@@ -41,14 +74,13 @@ export default function SettingsManagerPage() {
     setSettings({ ...settings, [e.target.name]: e.target.value })
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setSettings({ ...settings, logoImage: reader.result as string })
+      const url = await uploadImage(file)
+      if (url) {
+        setSettings({ ...settings, logoImage: url })
       }
-      reader.readAsDataURL(file)
     }
   }
 

@@ -5,52 +5,71 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const initialGallery: any[] = []
+import { createBrowserClient } from '@supabase/ssr'
+import { uploadImage } from '@/utils/supabase/storage'
 
 export default function GalleryManagerPage() {
   const [items, setItems] = useState<any[]>([])
 
   useEffect(() => {
-    const saved = localStorage.getItem('admin_gallery')
-    if (saved) setItems(JSON.parse(saved))
+    const fetchGallery = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('gallery').select('*').order('created_at', { ascending: false })
+      if (data) setItems(data)
+    }
+    fetchGallery()
   }, [])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
   const [title, setTitle] = useState('')
   const [image, setImage] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+      setIsUploading(true)
+      const url = await uploadImage(file)
+      if (url) setImage(url)
+      setIsUploading(false)
     }
   }
 
   const openAdd = () => { setEditingItem(null); setTitle(''); setImage(''); setIsModalOpen(true); }
   const openEdit = (item: any) => { setEditingItem(item); setTitle(item.title); setImage(item.image); setIsModalOpen(true); }
-  const handleDelete = (id: number) => { 
+  const handleDelete = async (id: string) => { 
     if (confirm("Delete this gallery image?")) {
-      const updated = items.filter(i => i.id !== id)
-      setItems(updated)
-      localStorage.setItem('admin_gallery', JSON.stringify(updated))
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      await supabase.from('gallery').delete().eq('id', id)
+      setItems(items.filter(i => i.id !== id))
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    let updated;
+    if (!image) return
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
     if (editingItem) {
-      updated = items.map(i => i.id === editingItem.id ? { ...i, title, image } : i)
+      const { data } = await supabase.from('gallery')
+        .update({ title, image })
+        .eq('id', editingItem.id)
+        .select().single()
+      if (data) setItems(items.map(i => i.id === editingItem.id ? data : i))
     } else {
-      updated = [...items, { id: Date.now(), title, image }]
+      const { data } = await supabase.from('gallery')
+        .insert([{ title, image }])
+        .select().single()
+      if (data) setItems([data, ...items])
     }
-    setItems(updated)
-    localStorage.setItem('admin_gallery', JSON.stringify(updated))
     setIsModalOpen(false)
   }
 
@@ -93,7 +112,7 @@ export default function GalleryManagerPage() {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-3xl overflow-y-auto max-h-[90vh] max-w-md w-full p-8 shadow-2xl relative">
               <h2 className="text-2xl font-heading mb-6">{editingItem ? 'Edit Gallery Image' : 'New Gallery Image'}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -105,11 +124,13 @@ export default function GalleryManagerPage() {
                       type="file" 
                       accept="image/*" 
                       onChange={handleImageUpload}
+                      disabled={isUploading}
                       className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
                     />
                     <div className="text-center text-xs text-gray-400">OR</div>
-                    <Input label="Paste Image URL" value={image} onChange={(e) => setImage(e.target.value)} required={!image} />
+                    <Input label="Paste Image URL" value={image} onChange={(e) => setImage(e.target.value)} required={!image} disabled={isUploading} />
                   </div>
+                  {isUploading && <p className="text-xs text-gold">Uploading image, please wait...</p>}
                   {image && <img src={image} className="mt-4 h-24 w-auto object-cover rounded-lg border border-gray-200" alt="Preview" />}
                 </div>
 

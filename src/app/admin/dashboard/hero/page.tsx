@@ -5,43 +5,57 @@ import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const initialImages: any[] = []
+import { createBrowserClient } from '@supabase/ssr'
+import { uploadImage } from '@/utils/supabase/storage'
 
 export default function HeroManagerPage() {
   const [images, setImages] = useState<any[]>([])
 
   useEffect(() => {
-    const saved = localStorage.getItem('admin_hero')
-    if (saved) setImages(JSON.parse(saved))
+    const fetchImages = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('hero_images').select('*').order('created_at', { ascending: true })
+      if (data) setImages(data)
+    }
+    fetchImages()
   }, [])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newUrl, setNewUrl] = useState('')
+  const [isUploading, setIsUploading] = useState(false)
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setNewUrl(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+      setIsUploading(true)
+      const url = await uploadImage(file)
+      if (url) setNewUrl(url)
+      setIsUploading(false)
     }
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Remove this image from the homepage sliding gallery?")) {
-      const updated = images.filter(img => img.id !== id)
-      setImages(updated)
-      localStorage.setItem('admin_hero', JSON.stringify(updated))
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      await supabase.from('hero_images').delete().eq('id', id)
+      setImages(images.filter(img => img.id !== id))
     }
   }
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    const updated = [...images, { id: Date.now(), url: newUrl }]
-    setImages(updated)
-    localStorage.setItem('admin_hero', JSON.stringify(updated))
+    if (!newUrl) return
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data } = await supabase.from('hero_images').insert([{ url: newUrl }]).select().single()
+    if (data) setImages([...images, data])
     setNewUrl('')
     setIsModalOpen(false)
   }
@@ -85,7 +99,7 @@ export default function HeroManagerPage() {
           >
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl overflow-hidden max-w-md w-full p-8 shadow-2xl relative"
+              className="bg-white rounded-3xl overflow-y-auto max-h-[90vh] max-w-md w-full p-8 shadow-2xl relative"
             >
               <h2 className="text-2xl font-heading text-black mb-6">Add Hero Image</h2>
               <form onSubmit={handleAdd} className="space-y-6">
@@ -96,11 +110,13 @@ export default function HeroManagerPage() {
                       type="file" 
                       accept="image/*" 
                       onChange={handleImageUpload}
+                      disabled={isUploading}
                       className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
                     />
                     <div className="text-center text-xs text-gray-400">OR</div>
-                    <Input label="Paste Image URL" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} required={!newUrl} />
+                    <Input label="Paste Image URL" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} required={!newUrl} disabled={isUploading} />
                   </div>
+                  {isUploading && <p className="text-xs text-gold">Uploading image, please wait...</p>}
                   {newUrl && <img src={newUrl} className="mt-4 h-24 w-auto object-cover rounded-lg border border-gray-200" alt="Preview" />}
                 </div>
                 <div className="flex gap-4 pt-4">

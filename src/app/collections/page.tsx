@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, MessageCircle, Camera } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 
 
 
@@ -12,8 +13,15 @@ export default function CollectionsPage() {
   const [selectedItem, setSelectedItem] = useState<any>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('admin_collections')
-    if (saved) setItems(JSON.parse(saved))
+    const fetchCollections = async () => {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data } = await supabase.from('collections').select('*').order('created_at', { ascending: false })
+      if (data) setItems(data)
+    }
+    fetchCollections()
   }, [])
 
   // Admin configurable links (hardcoded for now)
