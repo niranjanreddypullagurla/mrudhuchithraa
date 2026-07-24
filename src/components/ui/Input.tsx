@@ -16,7 +16,7 @@ export const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputPro
     const baseClasses = cn(
       'w-full bg-transparent px-0 py-3 text-base text-foreground transition-all duration-300',
       'border-b border-foreground/20 focus:border-gold outline-none',
-      'placeholder:text-foreground/30',
+      label ? 'placeholder:opacity-0 focus:placeholder:opacity-100 placeholder:text-foreground/30' : 'placeholder:text-foreground/30',
       'disabled:cursor-not-allowed disabled:opacity-50',
       {
         'border-red-500 focus:border-red-500': error,
