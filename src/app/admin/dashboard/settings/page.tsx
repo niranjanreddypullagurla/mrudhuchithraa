@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Save } from 'lucide-react'
+import { Save, ShieldAlert } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 
 const initialSettings = {
   instagram: '@mrudhuchithraa',
@@ -15,6 +16,11 @@ const initialSettings = {
 export default function SettingsManagerPage() {
   const [settings, setSettings] = useState(initialSettings)
   const [saved, setSaved] = useState(false)
+  
+  const [newEmail, setNewEmail] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [authMsg, setAuthMsg] = useState('')
+  const [authError, setAuthError] = useState(false)
 
   useEffect(() => {
     const data = localStorage.getItem('admin_settings')
@@ -30,6 +36,32 @@ export default function SettingsManagerPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSettings({ ...settings, [e.target.name]: e.target.value })
+  }
+
+  const handleUpdateAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setAuthMsg('Updating...')
+    setAuthError(false)
+
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    const updates: any = {}
+    if (newEmail) updates.email = newEmail
+    if (newPassword) updates.password = newPassword
+
+    const { error } = await supabase.auth.updateUser(updates)
+
+    if (error) {
+      setAuthMsg(error.message)
+      setAuthError(true)
+    } else {
+      setAuthMsg('Credentials updated successfully. If you changed your email, check both your old and new inboxes for a confirmation link before it takes effect.')
+      setNewEmail('')
+      setNewPassword('')
+    }
   }
 
   return (
@@ -79,6 +111,39 @@ export default function SettingsManagerPage() {
               <Save className="w-4 h-4" /> Save Settings
             </Button>
             {saved && <span className="text-emerald-500 font-medium text-sm">Settings saved successfully!</span>}
+          </div>
+        </form>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mt-8">
+        <h2 className="text-xl font-heading text-gray-800 mb-2 flex items-center gap-2">
+          <ShieldAlert className="w-5 h-5 text-red-500" /> Account Security
+        </h2>
+        <p className="text-gray-500 text-sm mb-6">Update your admin login email or password. Leave blank if you don't want to change it.</p>
+        
+        <form onSubmit={handleUpdateAuth} className="space-y-6 max-w-2xl">
+          <div className="space-y-4">
+            <Input 
+              label="New Login Email" 
+              type="email"
+              value={newEmail} 
+              onChange={(e) => setNewEmail(e.target.value)} 
+              placeholder="Leave blank to keep current"
+            />
+            <Input 
+              label="New Password" 
+              type="password"
+              value={newPassword} 
+              onChange={(e) => setNewPassword(e.target.value)} 
+              placeholder="Leave blank to keep current"
+            />
+          </div>
+
+          <div className="pt-4 flex items-center gap-4">
+            <Button type="submit" variant="outline" className="gap-2">
+              Update Credentials
+            </Button>
+            {authMsg && <span className={`font-medium text-sm max-w-xs leading-tight ${authError ? 'text-red-500' : 'text-emerald-500'}`}>{authMsg}</span>}
           </div>
         </form>
       </div>

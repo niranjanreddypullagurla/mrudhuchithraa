@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('mrudu@gmail.com')
-  const [password, setPassword] = useState('admin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -17,13 +17,6 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true)
     setError('')
-
-    // Hardcoded bypass for the requested admin credentials
-    if (email === 'mrudu@gmail.com' && password === 'admin') {
-      document.cookie = "admin_bypass=true; path=/";
-      router.push('/admin/dashboard')
-      return
-    }
 
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
