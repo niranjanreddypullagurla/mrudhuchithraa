@@ -1,103 +1,77 @@
-import Image from "next/image";
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { ArrowRight } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [heroImages, setHeroImages] = useState<any[]>([])
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    const saved = localStorage.getItem('admin_hero')
+    if (saved) setHeroImages(JSON.parse(saved))
+  }, [])
+
+  const displayImages = heroImages.length > 0 ? heroImages.map(i => i.url) : []
+
+  return (
+    <main className="min-h-screen relative overflow-hidden bg-white">
+      <div className="container mx-auto px-6 md:px-12 pt-32 pb-10 flex flex-col items-center text-center relative z-10">
+        <div className="max-w-4xl mt-12 mb-16">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-heading text-6xl md:text-8xl text-black mb-8 leading-[1.1] tracking-tight"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Handcrafted <br />
+            <span className="text-gold italic">Elegance.</span>
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="font-body text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Read our docs
-          </a>
+            Welcome to Mrudhuchithraa, a pristine digital gallery of bespoke creations. Discover art designed exclusively for your space.
+          </motion.p>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex justify-center gap-6"
+          >
+            <Link href="/collections">
+              <Button size="lg" className="px-10 bg-black text-white hover:bg-gold border-none">
+                View Collections
+              </Button>
+            </Link>
+          </motion.div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        {/* Scrolling Image Marquee */}
+        <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden py-10 bg-gray-50 border-y border-gray-100">
+          {displayImages.length > 0 ? (
+            <motion.div 
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
+              className="flex gap-8 w-max"
+            >
+              {[...displayImages, ...displayImages, ...displayImages, ...displayImages].map((src, idx) => (
+                <div key={idx} className="w-[300px] h-[400px] md:w-[400px] md:h-[500px] relative overflow-hidden rounded-2xl shrink-0 shadow-sm bg-gray-200">
+                  <img src={src} alt="Art piece" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                </div>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="w-full py-20 flex items-center justify-center text-gray-400">
+              No hero images added yet.
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  )
 }
