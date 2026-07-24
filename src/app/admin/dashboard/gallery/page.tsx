@@ -20,6 +20,17 @@ export default function GalleryManagerPage() {
   const [title, setTitle] = useState('')
   const [image, setImage] = useState('')
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImage(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const openAdd = () => { setEditingItem(null); setTitle(''); setImage(''); setIsModalOpen(true); }
   const openEdit = (item: any) => { setEditingItem(item); setTitle(item.title); setImage(item.image); setIsModalOpen(true); }
   const handleDelete = (id: number) => { 
@@ -86,7 +97,22 @@ export default function GalleryManagerPage() {
               <h2 className="text-2xl font-heading mb-6">{editingItem ? 'Edit Gallery Image' : 'New Gallery Image'}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                <Input label="Image URL" value={image} onChange={(e) => setImage(e.target.value)} required />
+                
+                <div className="space-y-2">
+                  <label className="text-xs text-gold font-medium block font-body">Artwork Image</label>
+                  <div className="flex flex-col gap-4">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageUpload}
+                      className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
+                    />
+                    <div className="text-center text-xs text-gray-400">OR</div>
+                    <Input label="Paste Image URL" value={image} onChange={(e) => setImage(e.target.value)} required={!image} />
+                  </div>
+                  {image && <img src={image} className="mt-4 h-24 w-auto object-cover rounded-lg border border-gray-200" alt="Preview" />}
+                </div>
+
                 <div className="flex gap-4 pt-4">
                   <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="w-full">Cancel</Button>
                   <Button type="submit" className="w-full bg-black text-white hover:bg-gold border-none">Save</Button>

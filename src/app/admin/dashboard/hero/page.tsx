@@ -18,6 +18,17 @@ export default function HeroManagerPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newUrl, setNewUrl] = useState('')
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setNewUrl(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleDelete = (id: number) => {
     if (confirm("Remove this image from the homepage sliding gallery?")) {
       const updated = images.filter(img => img.id !== id)
@@ -78,7 +89,20 @@ export default function HeroManagerPage() {
             >
               <h2 className="text-2xl font-heading text-black mb-6">Add Hero Image</h2>
               <form onSubmit={handleAdd} className="space-y-6">
-                <Input label="Image URL" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} required />
+                <div className="space-y-2">
+                  <label className="text-xs text-gold font-medium block font-body">Hero Image</label>
+                  <div className="flex flex-col gap-4">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageUpload}
+                      className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
+                    />
+                    <div className="text-center text-xs text-gray-400">OR</div>
+                    <Input label="Paste Image URL" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} required={!newUrl} />
+                  </div>
+                  {newUrl && <img src={newUrl} className="mt-4 h-24 w-auto object-cover rounded-lg border border-gray-200" alt="Preview" />}
+                </div>
                 <div className="flex gap-4 pt-4">
                   <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="w-full">Cancel</Button>
                   <Button type="submit" className="w-full bg-black text-white hover:bg-gold border-none">Add to Slider</Button>

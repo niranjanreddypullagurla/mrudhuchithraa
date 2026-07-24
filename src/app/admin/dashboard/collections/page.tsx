@@ -24,6 +24,17 @@ export default function AdminCollections() {
   const [category, setCategory] = useState('')
   const [image, setImage] = useState('')
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImage(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const openAddModal = () => {
     setEditingItem(null)
     setTitle('')
@@ -155,12 +166,20 @@ export default function AdminCollections() {
                   required 
                 />
                 
-                <Input 
-                  label="Image URL" 
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  required 
-                />
+                <div className="space-y-2">
+                  <label className="text-xs text-gold font-medium block font-body">Artwork Image</label>
+                  <div className="flex flex-col gap-4">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleImageUpload}
+                      className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gold/10 file:text-gold hover:file:bg-gold/20"
+                    />
+                    <div className="text-center text-xs text-gray-400">OR</div>
+                    <Input label="Paste Image URL" value={image} onChange={(e) => setImage(e.target.value)} required={!image} />
+                  </div>
+                  {image && <img src={image} className="mt-4 h-24 w-auto object-cover rounded-lg border border-gray-200" alt="Preview" />}
+                </div>
 
                 <div className="flex gap-4 pt-4">
                   <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="w-full">
