@@ -35,7 +35,7 @@ export const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="font-heading text-3xl tracking-wide mb-6 inline-block text-white">
               {settings.logoType === 'image' && settings.logoImage ? (
-                <img src={settings.logoImage} alt="Brand Logo" className="h-12 object-contain" />
+                <img src={settings.logoImage} alt="Brand Logo" className="h-16 md:h-20 w-auto object-contain" />
               ) : (
                 settings.brandName || 'Mrudhuchithraa'
               )}

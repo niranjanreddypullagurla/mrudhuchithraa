@@ -51,7 +51,7 @@ export const Navbar = ({ user }: { user: any }) => {
         <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
           <Link href="/" className="font-heading text-2xl tracking-wide text-foreground flex items-center">
             {logoType === 'image' && logoImage ? (
-              <img src={logoImage} alt="Brand Logo" className="h-8 object-contain" />
+              <img src={logoImage} alt="Brand Logo" className="h-10 md:h-12 w-auto object-contain" />
             ) : (
               brandName
             )}

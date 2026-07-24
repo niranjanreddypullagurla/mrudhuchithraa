@@ -25,9 +25,9 @@ export default function GalleryPage() {
         </header>
 
         {/* Pinterest Style Masonry Grid Placeholder */}
-        <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+        <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 space-y-4">
           {items.map((item, i) => {
-            const heights = ['h-48', 'h-64', 'h-80', 'h-96']
+            const heights = ['h-32', 'h-40', 'h-48', 'h-56']
             const randomHeight = heights[i % 4]
             return (
               <div 
@@ -37,7 +37,7 @@ export default function GalleryPage() {
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/5 transition-colors duration-300" />
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
-                  <p className="font-heading text-xl">{item.title}</p>
+                  <p className="font-heading text-lg px-2 text-center truncate w-full">{item.title}</p>
                 </div>
               </div>
             )

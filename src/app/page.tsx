@@ -17,7 +17,7 @@ export default function Home() {
   const displayImages = heroImages.length > 0 ? heroImages.map(i => i.url) : []
 
   return (
-    <main className="min-h-screen relative overflow-hidden bg-white">
+    <main className="min-h-screen relative bg-white">
       <div className="container mx-auto px-6 md:px-12 pt-32 pb-10 flex flex-col items-center text-center relative z-10">
         <div className="max-w-4xl mt-12 mb-16">
           <motion.h1 

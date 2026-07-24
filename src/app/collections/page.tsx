@@ -36,21 +36,21 @@ export default function CollectionsPage() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
           {items.map((item) => (
             <motion.div 
               key={item.id} 
               whileHover={{ y: -5 }}
               onClick={() => setSelectedItem(item)}
-              className="group cursor-pointer rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm hover:shadow-xl transition-all"
+              className="group cursor-pointer rounded-xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm hover:shadow-xl transition-all"
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-gray-200">
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
               </div>
-              <div className="p-6 bg-white text-center">
-                <p className="text-xs font-bold uppercase tracking-widest text-gold mb-2">{item.category}</p>
-                <h3 className="font-heading text-2xl text-black">{item.title}</h3>
+              <div className="p-4 bg-white text-center">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gold mb-1 truncate">{item.category}</p>
+                <h3 className="font-heading text-lg text-black truncate">{item.title}</h3>
               </div>
             </motion.div>
           ))}
